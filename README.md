@@ -13,7 +13,7 @@ The Trust Dashboard is the steward's compass - providing visibility, accountabil
 ## Quick Links
 
 - [Atlas - Comprehensive Guide](./ATLAS.md)
-- [OpenShift Deployment](./.github/workflows/openshift.yml)
+- [OpenShift Workflow](./.github/workflows/openshift.yml)
 
 ## Getting Started
 
