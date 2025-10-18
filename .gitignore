@@ -1,0 +1,12 @@
+# Audit logs
+audit.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

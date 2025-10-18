@@ -1,0 +1,66 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: ffsimmutablefields
+  annotations:
+    description: "Protects critical fields from mutation after creation"
+spec:
+  crd:
+    spec:
+      names:
+        kind: FfsImmutableFields
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            fields:
+              type: array
+              items:
+                type: string
+              description: "List of fields that should be immutable"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package ffsimmutablefields
+
+        violation[{"msg": msg, "details": {"field": field}}] {
+          # Only check UPDATE operations
+          input.review.operation == "UPDATE"
+
+          # Get the field path to check
+          field := input.parameters.fields[_]
+
+          # Parse field path (e.g., "metadata.labels.owner")
+          field_parts := split(field, ".")
+
+          # Get old and new values
+          old_value := object.get(input.review.oldObject, field_parts, null)
+          new_value := object.get(input.review.object, field_parts, null)
+
+          # Check if field was changed
+          old_value != null
+          old_value != new_value
+
+          msg := sprintf("Field '%s' is immutable and cannot be changed after creation", [field])
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: FfsImmutableFields
+metadata:
+  name: protect-critical-fields
+spec:
+  match:
+    kinds:
+      - apiGroups: ["*"]
+        kinds: ["*"]
+    namespaces:
+      - "default"
+      - "production"
+      - "staging"
+  parameters:
+    fields:
+      - "metadata.labels.owner"
+      - "metadata.labels.cost-center"
+      - "metadata.labels.data-class"
+      - "metadata.annotations.created-by"
+      - "spec.serviceAccountName"

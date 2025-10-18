@@ -1,0 +1,67 @@
+name: 'Emit Audit Log'
+description: 'Emits a structured audit entry for CI/CD events'
+author: 'Wise-innovations'
+
+inputs:
+  workflow_name:
+    description: 'Name of the workflow'
+    required: false
+    default: ${{ github.workflow }}
+  run_id:
+    description: 'Workflow run ID'
+    required: false
+    default: ${{ github.run_id }}
+  run_number:
+    description: 'Workflow run number'
+    required: false
+    default: ${{ github.run_number }}
+  status:
+    description: 'Status of the workflow (success, failure, cancelled)'
+    required: true
+  actor:
+    description: 'Actor who triggered the workflow'
+    required: false
+    default: ${{ github.actor }}
+  repository:
+    description: 'Repository name'
+    required: false
+    default: ${{ github.repository }}
+  ref:
+    description: 'Git reference'
+    required: false
+    default: ${{ github.ref }}
+  sha:
+    description: 'Commit SHA'
+    required: false
+    default: ${{ github.sha }}
+  event:
+    description: 'Event that triggered the workflow'
+    required: false
+    default: ${{ github.event_name }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Emit audit log entry
+      shell: bash
+      run: |
+        # Source the audit library
+        source ${{ github.workspace }}/lib/audit.sh
+
+        # Call Emitauditlog function
+        Emitauditlog \
+          "${{ inputs.workflow_name }}" \
+          "${{ inputs.run_id }}" \
+          "${{ inputs.run_number }}" \
+          "${{ inputs.status }}" \
+          "${{ inputs.actor }}" \
+          "${{ inputs.repository }}" \
+          "${{ inputs.ref }}" \
+          "${{ inputs.sha }}" \
+          "${{ inputs.event }}"
+
+        echo "Audit log entry created successfully"
+
+branding:
+  icon: 'file-text'
+  color: 'blue'

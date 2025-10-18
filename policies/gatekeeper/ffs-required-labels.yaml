@@ -1,0 +1,51 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: ffsrequiredlabels
+  annotations:
+    description: "Requires resources to have specific labels for governance"
+spec:
+  crd:
+    spec:
+      names:
+        kind: FfsRequiredLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            labels:
+              type: array
+              items:
+                type: string
+              description: "List of required labels"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package ffsrequiredlabels
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          provided := {label | input.review.object.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("Resource is missing required labels: %v", [missing])
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: FfsRequiredLabels
+metadata:
+  name: require-governance-labels
+spec:
+  match:
+    kinds:
+      - apiGroups: ["*"]
+        kinds: ["*"]
+    namespaces:
+      - "default"
+      - "production"
+      - "staging"
+  parameters:
+    labels:
+      - "owner"
+      - "cost-center"
+      - "data-class"

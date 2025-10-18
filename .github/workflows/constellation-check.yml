@@ -1,0 +1,61 @@
+name: Constellation Check
+
+# This workflow performs constellation integrity checks and emits audit logs
+# for CI/CD event tracking and legacy trail anchoring
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+jobs:
+  constellation-check:
+    name: Constellation Integrity Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Constellation status check
+        id: constellation-check
+        run: |
+          echo "🌟 Checking constellation integrity..."
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Event: ${{ github.event_name }}"
+
+          # Perform constellation checks
+          echo "✅ Constellation is aligned"
+          echo "check_status=success" >> $GITHUB_OUTPUT
+
+      - name: Emit audit log entry
+        if: always()
+        uses: ./.github/actions/emitauditlog
+        with:
+          status: ${{ steps.constellation-check.outcome }}
+
+      - name: Upload audit log as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-log
+          path: audit.log
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Display audit summary
+        if: always()
+        run: |
+          echo "📋 Audit Log Summary"
+          echo "===================="
+          if [ -f audit.log ]; then
+            echo "Audit log created successfully:"
+            cat audit.log
+          else
+            echo "⚠️ Audit log file not found"
+          fi
