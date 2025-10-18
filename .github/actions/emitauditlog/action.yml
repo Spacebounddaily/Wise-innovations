@@ -6,38 +6,38 @@ inputs:
   workflow_name:
     description: 'Name of the workflow'
     required: false
-    default: ${{ github.workflow }}
+    default: ''
   run_id:
     description: 'Workflow run ID'
     required: false
-    default: ${{ github.run_id }}
+    default: ''
   run_number:
     description: 'Workflow run number'
     required: false
-    default: ${{ github.run_number }}
+    default: ''
   status:
     description: 'Status of the workflow (success, failure, cancelled)'
     required: true
   actor:
     description: 'Actor who triggered the workflow'
     required: false
-    default: ${{ github.actor }}
+    default: ''
   repository:
     description: 'Repository name'
     required: false
-    default: ${{ github.repository }}
+    default: ''
   ref:
     description: 'Git reference'
     required: false
-    default: ${{ github.ref }}
+    default: ''
   sha:
     description: 'Commit SHA'
     required: false
-    default: ${{ github.sha }}
+    default: ''
   event:
     description: 'Event that triggered the workflow'
     required: false
-    default: ${{ github.event_name }}
+    default: ''
 
 runs:
   using: 'composite'
@@ -48,7 +48,7 @@ runs:
         # Source the audit library
         source ${{ github.workspace }}/lib/audit.sh
 
-        # Call Emitauditlog function
+        # Call Emitauditlog function with inputs or fallback to environment variables
         Emitauditlog \
           "${{ inputs.workflow_name }}" \
           "${{ inputs.run_id }}" \

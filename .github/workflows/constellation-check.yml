@@ -37,7 +37,15 @@ jobs:
         if: always()
         uses: ./.github/actions/emitauditlog
         with:
+          workflow_name: ${{ github.workflow }}
+          run_id: ${{ github.run_id }}
+          run_number: ${{ github.run_number }}
           status: ${{ steps.constellation-check.outcome }}
+          actor: ${{ github.actor }}
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          sha: ${{ github.sha }}
+          event: ${{ github.event_name }}
 
       - name: Upload audit log as artifact
         if: always()
