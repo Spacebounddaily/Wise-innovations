@@ -29,13 +29,24 @@ Emitauditlog \
 
 #### In GitHub Actions workflow:
 
-Use the composite action instead:
+Use the composite action instead. It automatically picks up GitHub context:
 
 ```yaml
 - name: Emit audit log
   uses: ./.github/actions/emitauditlog
   with:
     status: success
+```
+
+You can optionally override any parameter:
+
+```yaml
+- name: Emit custom audit log
+  uses: ./.github/actions/emitauditlog
+  with:
+    status: ${{ job.status }}
+    workflow_name: "Custom Workflow Name"
+    actor: "system"
 ```
 
 ### Function Signature
