@@ -1,0 +1,90 @@
+name: 'Emit Audit Log'
+description: |
+  Emits a structured audit entry for CI/CD events.
+  Automatically uses GitHub context when inputs are not provided.
+author: 'Wise-innovations'
+
+inputs:
+  workflow_name:
+    description: 'Name of the workflow (defaults to GITHUB_WORKFLOW)'
+    required: false
+    default: ''
+  run_id:
+    description: 'Workflow run ID (defaults to GITHUB_RUN_ID)'
+    required: false
+    default: ''
+  run_number:
+    description: 'Workflow run number (defaults to GITHUB_RUN_NUMBER)'
+    required: false
+    default: ''
+  status:
+    description: 'Status of the workflow (success, failure, cancelled, skipped)'
+    required: true
+  actor:
+    description: 'Actor who triggered the workflow (defaults to GITHUB_ACTOR)'
+    required: false
+    default: ''
+  repository:
+    description: 'Repository name (defaults to GITHUB_REPOSITORY)'
+    required: false
+    default: ''
+  ref:
+    description: 'Git reference (defaults to GITHUB_REF)'
+    required: false
+    default: ''
+  sha:
+    description: 'Commit SHA (defaults to GITHUB_SHA)'
+    required: false
+    default: ''
+  event:
+    description: 'Event that triggered the workflow (defaults to GITHUB_EVENT_NAME)'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Emit audit log entry
+      shell: bash
+      env:
+        INPUT_WORKFLOW_NAME: ${{ inputs.workflow_name }}
+        INPUT_RUN_ID: ${{ inputs.run_id }}
+        INPUT_RUN_NUMBER: ${{ inputs.run_number }}
+        INPUT_STATUS: ${{ inputs.status }}
+        INPUT_ACTOR: ${{ inputs.actor }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_SHA: ${{ inputs.sha }}
+        INPUT_EVENT: ${{ inputs.event }}
+      run: |
+        # Source the audit library
+        source ${{ github.workspace }}/lib/audit.sh
+
+        # Use inputs or fall back to GitHub environment variables
+        WORKFLOW_NAME="${INPUT_WORKFLOW_NAME:-${GITHUB_WORKFLOW:-unknown}}"
+        RUN_ID="${INPUT_RUN_ID:-${GITHUB_RUN_ID:-0}}"
+        RUN_NUMBER="${INPUT_RUN_NUMBER:-${GITHUB_RUN_NUMBER:-0}}"
+        STATUS="${INPUT_STATUS:-unknown}"
+        ACTOR="${INPUT_ACTOR:-${GITHUB_ACTOR:-system}}"
+        REPOSITORY="${INPUT_REPOSITORY:-${GITHUB_REPOSITORY:-unknown}}"
+        REF="${INPUT_REF:-${GITHUB_REF:-unknown}}"
+        SHA="${INPUT_SHA:-${GITHUB_SHA:-unknown}}"
+        EVENT="${INPUT_EVENT:-${GITHUB_EVENT_NAME:-unknown}}"
+
+        # Call Emitauditlog function
+        Emitauditlog \
+          "$WORKFLOW_NAME" \
+          "$RUN_ID" \
+          "$RUN_NUMBER" \
+          "$STATUS" \
+          "$ACTOR" \
+          "$REPOSITORY" \
+          "$REF" \
+          "$SHA" \
+          "$EVENT"
+
+        echo "Audit log entry created successfully"
+
+branding:
+  icon: 'file-text'
+  color: 'blue'
